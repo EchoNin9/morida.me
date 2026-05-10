@@ -13,13 +13,9 @@ data "aws_caller_identity" "current" {}
 
 locals {
   mediaBucketName = "mo-media-${data.aws_caller_identity.current.account_id}"
-}
-
-# ------------------------------------------------------------------------------
-# GitHub OIDC provider (for Actions to assume IAM roles without long-lived keys)
-# ------------------------------------------------------------------------------
-data "aws_iam_openid_connect_provider" "github" {
-  url = "https://token.actions.githubusercontent.com"
+  # OIDC provider is account-wide; constructed here to avoid needing
+  # iam:ListOpenIDConnectProviders on every role that consumes it.
+  githubOidcArn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
 }
 
 # ------------------------------------------------------------------------------
@@ -30,7 +26,7 @@ data "aws_iam_policy_document" "githubStagingAssume" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
-      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
+      identifiers = [local.githubOidcArn]
     }
     condition {
       test     = "StringLike"
@@ -58,7 +54,7 @@ data "aws_iam_policy_document" "githubProductionAssume" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
-      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
+      identifiers = [local.githubOidcArn]
     }
     condition {
       test     = "StringLike"
