@@ -69,11 +69,6 @@ variable "apiGatewayName" {
   default     = "mo-api"
 }
 
-variable "mediaBucketName" {
-  description = "S3 bucket name for user uploads (audio, video, images). Must be passed in (no default to avoid hardcoding account ID)."
-  type        = string
-}
-
 # ------------------------------------------------------------------------------
 # Custom domain (CloudFront + ClouDNS — DNS is managed manually outside Terraform)
 # ------------------------------------------------------------------------------

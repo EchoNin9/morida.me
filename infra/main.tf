@@ -11,17 +11,15 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
+locals {
+  mediaBucketName = "mo-media-${data.aws_caller_identity.current.account_id}"
+}
+
 # ------------------------------------------------------------------------------
 # GitHub OIDC provider (for Actions to assume IAM roles without long-lived keys)
 # ------------------------------------------------------------------------------
-data "tls_certificate" "github" {
+data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
-}
-
-resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.github.certificates[0].sha1_fingerprint]
 }
 
 # ------------------------------------------------------------------------------
@@ -32,7 +30,7 @@ data "aws_iam_policy_document" "githubStagingAssume" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
     }
     condition {
       test     = "StringLike"
@@ -60,7 +58,7 @@ data "aws_iam_policy_document" "githubProductionAssume" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
     }
     condition {
       test     = "StringLike"
@@ -144,8 +142,8 @@ data "aws_iam_policy_document" "deploy" {
       "arn:aws:s3:::${var.websiteStagingBucket}/*",
       "arn:aws:s3:::${var.websiteProductionBucket}",
       "arn:aws:s3:::${var.websiteProductionBucket}/*",
-      "arn:aws:s3:::${var.mediaBucketName}",
-      "arn:aws:s3:::${var.mediaBucketName}/*"
+      "arn:aws:s3:::${local.mediaBucketName}",
+      "arn:aws:s3:::${local.mediaBucketName}/*"
     ]
   }
 
@@ -334,8 +332,9 @@ data "aws_iam_policy_document" "websiteStagingPublicRead" {
 }
 
 resource "aws_s3_bucket_policy" "websiteStaging" {
-  bucket = aws_s3_bucket.websiteStaging.id
-  policy = data.aws_iam_policy_document.websiteStagingPublicRead.json
+  bucket     = aws_s3_bucket.websiteStaging.id
+  policy     = data.aws_iam_policy_document.websiteStagingPublicRead.json
+  depends_on = [aws_s3_bucket_public_access_block.websiteStaging]
 }
 
 resource "aws_s3_bucket_website_configuration" "websiteStaging" {
@@ -376,8 +375,9 @@ data "aws_iam_policy_document" "websiteProductionPublicRead" {
 }
 
 resource "aws_s3_bucket_policy" "websiteProduction" {
-  bucket = aws_s3_bucket.websiteProduction.id
-  policy = data.aws_iam_policy_document.websiteProductionPublicRead.json
+  bucket     = aws_s3_bucket.websiteProduction.id
+  policy     = data.aws_iam_policy_document.websiteProductionPublicRead.json
+  depends_on = [aws_s3_bucket_public_access_block.websiteProduction]
 }
 
 resource "aws_s3_bucket_website_configuration" "websiteProduction" {
@@ -395,7 +395,7 @@ resource "aws_s3_bucket_website_configuration" "websiteProduction" {
 # S3 media bucket (user uploads: audio, video, images; presigned PUT/GET)
 # ------------------------------------------------------------------------------
 resource "aws_s3_bucket" "media" {
-  bucket = var.mediaBucketName
+  bucket = local.mediaBucketName
 }
 
 resource "aws_s3_bucket_cors_configuration" "media" {

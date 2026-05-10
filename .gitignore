@@ -12,6 +12,7 @@ infra/*.tfstate
 infra/*.tfstate.*
 infra/*.zip
 infra/.terraform.lock.hcl
+infra/tfplan
 
 # Python
 __pycache__/
