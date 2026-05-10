@@ -51,7 +51,7 @@ function SoundCloudIcon({ className }: { className?: string }) {
 
 const socialLinks = [
   { name: "Spotify", href: "https://open.spotify.com/playlist/3Np0DOO7qnA1jWjmBV2Kjc", Icon: SpotifyIcon },
-  { name: "Instagram", href: "https://instagram.com/morida.me", Icon: InstagramIcon },
+  { name: "Instagram", href: "https://www.instagram.com/_mo.rida_/", Icon: InstagramIcon },
   { name: "Facebook", href: "https://facebook.com/moridamusic", Icon: FacebookIcon },
   { name: "Bluesky", href: "https://bsky.app/profile/jinks.ninja", Icon: BlueskyIcon },
   { name: "YouTube", href: "https://www.youtube.com/watch?v=cThz9hTD74E&list=PLQDmWUyxw2hQXcrCibYxB8GLsRH9eKnaq", Icon: YouTubeIcon },
