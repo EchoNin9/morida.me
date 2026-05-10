@@ -156,7 +156,7 @@ export function Header() {
       <nav className="container-max flex items-center justify-between py-3">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="MoRida" className="w-8 h-8 object-contain" />
+          <img src="/logo.jpg" alt="MoRida" className="w-8 h-8 object-contain" />
           <span className="text-xl font-display font-bold text-gradient">MoRida</span>
         </Link>
 
