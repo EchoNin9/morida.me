@@ -14,6 +14,12 @@ interface Window {
     signIn: (email: string, password: string, cb: (err: Error | null, result?: unknown) => void) => void;
     signUp: (email: string, password: string, cb: (err: Error | null, result?: unknown) => void) => void;
     confirmSignUp: (email: string, code: string, cb: (err: Error | null, result?: unknown) => void) => void;
+    respondToChallenge: (
+      challengeName: string,
+      session: string,
+      responses: Record<string, string>,
+      cb: (err: Error | null, result?: unknown) => void,
+    ) => void;
     signOut: () => void;
     getUserInfo?: () => { sub: string; email: string; groups: string[]; emailVerified: boolean } | null;
     getGroups?: () => string[];

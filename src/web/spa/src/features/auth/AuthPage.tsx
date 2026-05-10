@@ -7,13 +7,48 @@ import { useAuth } from "../../shell/AuthContext";
 /*  Promise wrappers for window.auth callbacks                        */
 /* ------------------------------------------------------------------ */
 
-function promiseSignIn(email: string, password: string): Promise<unknown> {
+type SignInChallenge = {
+  challenge: string;
+  session: string;
+  challengeParameters?: Record<string, string>;
+};
+type SignInTokens = {
+  accessToken: string;
+  idToken: string;
+  refreshToken: string;
+};
+type SignInResult = SignInChallenge | SignInTokens;
+
+function isChallenge(r: unknown): r is SignInChallenge {
+  return typeof r === "object" && r !== null && "challenge" in r;
+}
+
+function promiseSignIn(email: string, password: string): Promise<SignInResult> {
   return new Promise((resolve, reject) => {
     if (!window.auth) return reject(new Error("Auth SDK not loaded"));
     window.auth.signIn(email, password, (err, result) => {
       if (err) reject(err);
-      else resolve(result);
+      else resolve(result as SignInResult);
     });
+  });
+}
+
+function promiseRespondToNewPassword(
+  email: string,
+  newPassword: string,
+  session: string,
+): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    if (!window.auth) return reject(new Error("Auth SDK not loaded"));
+    window.auth.respondToChallenge(
+      "NEW_PASSWORD_REQUIRED",
+      session,
+      { USERNAME: email, NEW_PASSWORD: newPassword },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      },
+    );
   });
 }
 
@@ -42,7 +77,7 @@ function promiseConfirmSignUp(email: string, code: string): Promise<unknown> {
 /* ------------------------------------------------------------------ */
 
 type Tab = "signin" | "signup";
-type Step = "form" | "confirm";
+type Step = "form" | "confirm" | "newPassword";
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -54,6 +89,9 @@ export function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [challengeSession, setChallengeSession] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -68,11 +106,47 @@ export function AuthPage() {
     setError(null);
     setLoading(true);
     try {
-      await promiseSignIn(email, password);
+      const result = await promiseSignIn(email, password);
+      if (isChallenge(result)) {
+        if (result.challenge === "NEW_PASSWORD_REQUIRED") {
+          setChallengeSession(result.session);
+          setStep("newPassword");
+          return;
+        }
+        throw new Error(`Unsupported challenge: ${result.challenge}`);
+      }
       await refreshAuth();
       navigate("/");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSetNewPassword(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (newPassword !== confirmNewPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    if (!challengeSession) {
+      setError("Session expired — please sign in again");
+      setStep("form");
+      return;
+    }
+    setLoading(true);
+    try {
+      await promiseRespondToNewPassword(email, newPassword, challengeSession);
+      await refreshAuth();
+      navigate("/");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to set new password");
     } finally {
       setLoading(false);
     }
@@ -151,8 +225,51 @@ export function AuthPage() {
           </div>
         )}
 
+        {/* ── New password (FORCE_CHANGE_PASSWORD challenge) ── */}
+        {tab === "signin" && step === "newPassword" && (
+          <form onSubmit={handleSetNewPassword} className="space-y-5">
+            <h2 className="text-2xl font-display font-bold text-secondary-100">
+              Set a new password
+            </h2>
+            <p className="text-sm text-secondary-400">
+              Your account requires a new password before first sign in. Pick something
+              you'll remember — we won't email it.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                New password
+              </label>
+              <input
+                type="password"
+                required
+                autoFocus
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="input-field"
+                placeholder="Min 8 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                Confirm new password
+              </label>
+              <input
+                type="password"
+                required
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                className="input-field"
+                placeholder="Re-enter new password"
+              />
+            </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? "Setting password..." : "Set password & sign in"}
+            </button>
+          </form>
+        )}
+
         {/* ── Sign In form ── */}
-        {tab === "signin" && (
+        {tab === "signin" && step === "form" && (
           <form onSubmit={handleSignIn} className="space-y-5">
             <h2 className="text-2xl font-display font-bold text-secondary-100">
               Welcome Back
