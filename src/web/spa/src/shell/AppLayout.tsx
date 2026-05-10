@@ -1,37 +1,38 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ErrorBoundary } from './ErrorBoundary';
 import { PageTransition } from '@/utils/PageTransition';
+import { lazyWithReload } from '@/utils/lazyWithReload';
 
 /* ── Eager-loaded: homepage only ── */
 import { HomePage } from '@/features/home/HomePage';
 
 /* ── Lazy-loaded feature pages ── */
-const UpdatesPage = lazy(() => import('@/features/updates/UpdatesPage').then(m => ({ default: m.UpdatesPage })));
-const PressPage = lazy(() => import('@/features/press/PressPage').then(m => ({ default: m.PressPage })));
-const PressDetailPage = lazy(() => import('@/features/press/PressDetailPage').then(m => ({ default: m.PressDetailPage })));
-const AuthPage = lazy(() => import('@/features/auth/AuthPage').then(m => ({ default: m.AuthPage })));
-const ProfilePage = lazy(() => import('@/features/profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const PublicProfilePage = lazy(() => import('@/features/profile/PublicProfilePage').then(m => ({ default: m.PublicProfilePage })));
-const ShowsPage = lazy(() => import('@/features/shows/ShowsPage'));
-const ShowDetailPage = lazy(() => import('@/features/shows/ShowDetailPage'));
-const MediaPage = lazy(() => import('@/features/media/MediaPage'));
-const MediaDetailPage = lazy(() => import('@/features/media/MediaDetailPage'));
+const UpdatesPage = lazyWithReload(() => import('@/features/updates/UpdatesPage').then(m => ({ default: m.UpdatesPage })));
+const PressPage = lazyWithReload(() => import('@/features/press/PressPage').then(m => ({ default: m.PressPage })));
+const PressDetailPage = lazyWithReload(() => import('@/features/press/PressDetailPage').then(m => ({ default: m.PressDetailPage })));
+const AuthPage = lazyWithReload(() => import('@/features/auth/AuthPage').then(m => ({ default: m.AuthPage })));
+const ProfilePage = lazyWithReload(() => import('@/features/profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const PublicProfilePage = lazyWithReload(() => import('@/features/profile/PublicProfilePage').then(m => ({ default: m.PublicProfilePage })));
+const ShowsPage = lazyWithReload(() => import('@/features/shows/ShowsPage'));
+const ShowDetailPage = lazyWithReload(() => import('@/features/shows/ShowDetailPage'));
+const MediaPage = lazyWithReload(() => import('@/features/media/MediaPage'));
+const MediaDetailPage = lazyWithReload(() => import('@/features/media/MediaDetailPage'));
 
 /* ── Lazy-loaded admin pages ── */
-const AdminDashboard = lazy(() => import('@/features/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const ShowsAdminPage = lazy(() => import('@/features/admin/ShowsAdminPage'));
-const VenuesAdminPage = lazy(() => import('@/features/admin/VenuesAdminPage'));
-const MediaAdminPage = lazy(() => import('@/features/admin/MediaAdminPage'));
-const UpdatesAdminPage = lazy(() => import('@/features/admin/UpdatesAdminPage').then(m => ({ default: m.UpdatesAdminPage })));
-const PressAdminPage = lazy(() => import('@/features/admin/PressAdminPage').then(m => ({ default: m.PressAdminPage })));
-const MembershipPage = lazy(() => import('@/features/admin/MembershipPage').then(m => ({ default: m.MembershipPage })));
-const UsersPage = lazy(() => import('@/features/admin/UsersPage').then(m => ({ default: m.UsersPage })));
-const ApiKeysPage = lazy(() => import('@/features/admin/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
-const BrandingAdminPage = lazy(() => import('@/features/admin/BrandingAdminPage').then(m => ({ default: m.BrandingAdminPage })));
+const AdminDashboard = lazyWithReload(() => import('@/features/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const ShowsAdminPage = lazyWithReload(() => import('@/features/admin/ShowsAdminPage'));
+const VenuesAdminPage = lazyWithReload(() => import('@/features/admin/VenuesAdminPage'));
+const MediaAdminPage = lazyWithReload(() => import('@/features/admin/MediaAdminPage'));
+const UpdatesAdminPage = lazyWithReload(() => import('@/features/admin/UpdatesAdminPage').then(m => ({ default: m.UpdatesAdminPage })));
+const PressAdminPage = lazyWithReload(() => import('@/features/admin/PressAdminPage').then(m => ({ default: m.PressAdminPage })));
+const MembershipPage = lazyWithReload(() => import('@/features/admin/MembershipPage').then(m => ({ default: m.MembershipPage })));
+const UsersPage = lazyWithReload(() => import('@/features/admin/UsersPage').then(m => ({ default: m.UsersPage })));
+const ApiKeysPage = lazyWithReload(() => import('@/features/admin/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
+const BrandingAdminPage = lazyWithReload(() => import('@/features/admin/BrandingAdminPage').then(m => ({ default: m.BrandingAdminPage })));
 
 /** Route loading fallback */
 function PageLoader() {
