@@ -72,12 +72,41 @@ function promiseConfirmSignUp(email: string, code: string): Promise<unknown> {
   });
 }
 
+function promiseForgotPassword(email: string): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    if (!window.auth) return reject(new Error("Auth SDK not loaded"));
+    window.auth.forgotPassword(email, (err, result) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+}
+
+function promiseConfirmForgotPassword(
+  email: string,
+  code: string,
+  newPassword: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!window.auth) return reject(new Error("Auth SDK not loaded"));
+    window.auth.confirmForgotPassword(email, code, newPassword, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
 type Tab = "signin" | "signup";
-type Step = "form" | "confirm" | "newPassword";
+type Step =
+  | "form"
+  | "confirm"
+  | "newPassword"
+  | "forgotRequest"
+  | "forgotConfirm";
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -92,6 +121,10 @@ export function AuthPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [challengeSession, setChallengeSession] = useState<string | null>(null);
+  const [resetCode, setResetCode] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [confirmResetPassword, setConfirmResetPassword] = useState("");
+  const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -99,6 +132,60 @@ export function AuthPage() {
     setTab(t);
     setStep("form");
     setError(null);
+    setInfo(null);
+  }
+
+  function startForgot() {
+    setStep("forgotRequest");
+    setError(null);
+    setInfo(null);
+    setResetCode("");
+    setResetPassword("");
+    setConfirmResetPassword("");
+  }
+
+  async function handleRequestReset(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setInfo(null);
+    if (!email) {
+      setError("Enter the email address for your account");
+      return;
+    }
+    setLoading(true);
+    try {
+      await promiseForgotPassword(email);
+      setStep("forgotConfirm");
+      setInfo(`We sent a verification code to ${email}.`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not start password reset");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleConfirmReset(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (resetPassword !== confirmResetPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    if (resetPassword.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    setLoading(true);
+    try {
+      await promiseConfirmForgotPassword(email, resetCode.trim(), resetPassword);
+      await promiseSignIn(email, resetPassword);
+      await refreshAuth();
+      navigate("/");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to reset password");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSignIn(e: FormEvent) {
@@ -224,6 +311,11 @@ export function AuthPage() {
             {error}
           </div>
         )}
+        {info && !error && (
+          <div className="mb-6 p-3 rounded-lg bg-primary-500/10 border border-primary-500/30 text-primary-300 text-sm">
+            {info}
+          </div>
+        )}
 
         {/* ── New password (FORCE_CHANGE_PASSWORD challenge) ── */}
         {tab === "signin" && step === "newPassword" && (
@@ -303,6 +395,137 @@ export function AuthPage() {
             <button type="submit" disabled={loading} className="btn-primary w-full">
               {loading ? "Signing in..." : "Sign In"}
             </button>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={startForgot}
+                className="text-sm text-primary-400 hover:text-primary-300"
+              >
+                Forgot password?
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* ── Forgot password (request code) ── */}
+        {tab === "signin" && step === "forgotRequest" && (
+          <form onSubmit={handleRequestReset} className="space-y-5">
+            <h2 className="text-2xl font-display font-bold text-secondary-100">
+              Reset your password
+            </h2>
+            <p className="text-sm text-secondary-400">
+              Enter your account email and we'll send you a verification code.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-field"
+                placeholder="you@example.com"
+              />
+            </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? "Sending code..." : "Send reset code"}
+            </button>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("form");
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-sm text-secondary-400 hover:text-secondary-200"
+              >
+                Back to sign in
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* ── Forgot password (confirm code + new password) ── */}
+        {tab === "signin" && step === "forgotConfirm" && (
+          <form onSubmit={handleConfirmReset} className="space-y-5">
+            <h2 className="text-2xl font-display font-bold text-secondary-100">
+              Enter reset code
+            </h2>
+            <p className="text-sm text-secondary-400">
+              We sent a code to <strong className="text-secondary-200">{email}</strong>.
+              Enter it below along with your new password.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                Verification code
+              </label>
+              <input
+                type="text"
+                required
+                autoFocus
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value)}
+                className="input-field text-center tracking-widest text-lg"
+                placeholder="000000"
+                maxLength={6}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                New password
+              </label>
+              <input
+                type="password"
+                required
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                className="input-field"
+                placeholder="Min 8 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                Confirm new password
+              </label>
+              <input
+                type="password"
+                required
+                value={confirmResetPassword}
+                onChange={(e) => setConfirmResetPassword(e.target.value)}
+                className="input-field"
+                placeholder="Re-enter new password"
+              />
+            </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? "Resetting..." : "Reset password & sign in"}
+            </button>
+            <div className="flex justify-between text-sm">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("forgotRequest");
+                  setError(null);
+                }}
+                className="text-secondary-400 hover:text-secondary-200"
+              >
+                Resend code
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("form");
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-secondary-400 hover:text-secondary-200"
+              >
+                Back to sign in
+              </button>
+            </div>
           </form>
         )}
 

@@ -71,6 +71,14 @@ export function ProfilePage() {
   const [profilePublic, setProfilePublic] = useState(false);
   const [profilePhotoKey, setProfilePhotoKey] = useState("");
 
+  /* Change password */
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwNew, setPwNew] = useState("");
+  const [pwConfirm, setPwConfirm] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError, setPwError] = useState<string | null>(null);
+  const [pwSuccess, setPwSuccess] = useState(false);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -123,6 +131,50 @@ export function ProfilePage() {
     } finally {
       setPhotoUploading(false);
       e.target.value = "";
+    }
+  }
+
+  async function handleChangePassword(e: FormEvent) {
+    e.preventDefault();
+    setPwError(null);
+    setPwSuccess(false);
+    if (!pwCurrent) {
+      setPwError("Enter your current password");
+      return;
+    }
+    if (pwNew.length < 8) {
+      setPwError("New password must be at least 8 characters");
+      return;
+    }
+    if (pwNew !== pwConfirm) {
+      setPwError("New passwords do not match");
+      return;
+    }
+    if (pwNew === pwCurrent) {
+      setPwError("New password must be different from your current password");
+      return;
+    }
+    if (!window.auth) {
+      setPwError("Auth SDK not loaded");
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        window.auth!.changePassword(pwCurrent, pwNew, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      setPwCurrent("");
+      setPwNew("");
+      setPwConfirm("");
+      setPwSuccess(true);
+      setTimeout(() => setPwSuccess(false), 4000);
+    } catch (err: unknown) {
+      setPwError(err instanceof Error ? err.message : "Failed to change password");
+    } finally {
+      setPwSaving(false);
     }
   }
 
@@ -346,6 +398,69 @@ export function ProfilePage() {
             </p>
           </div>
         )}
+
+        {/* ── Change password ── */}
+        <div className="mt-10 pt-8 border-t border-secondary-800">
+          <h2 className="text-xl font-display font-bold text-secondary-100 mb-4">
+            Change Password
+          </h2>
+
+          {pwError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+              {pwError}
+            </div>
+          )}
+          {pwSuccess && (
+            <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+              Password updated successfully.
+            </div>
+          )}
+
+          <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                Current password
+              </label>
+              <input
+                type="password"
+                autoComplete="current-password"
+                value={pwCurrent}
+                onChange={(e) => setPwCurrent(e.target.value)}
+                className="input-field"
+                placeholder="Enter current password"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                New password
+              </label>
+              <input
+                type="password"
+                autoComplete="new-password"
+                value={pwNew}
+                onChange={(e) => setPwNew(e.target.value)}
+                className="input-field"
+                placeholder="Min 8 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-secondary-300 mb-1.5">
+                Confirm new password
+              </label>
+              <input
+                type="password"
+                autoComplete="new-password"
+                value={pwConfirm}
+                onChange={(e) => setPwConfirm(e.target.value)}
+                className="input-field"
+                placeholder="Re-enter new password"
+              />
+            </div>
+            <button type="submit" disabled={pwSaving} className="btn-primary">
+              {pwSaving ? "Updating..." : "Update Password"}
+            </button>
+          </form>
+        </div>
 
         {/* ── Role & groups ── */}
         <div className="mt-10 pt-8 border-t border-secondary-800">

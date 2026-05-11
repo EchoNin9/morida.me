@@ -20,6 +20,18 @@ interface Window {
       responses: Record<string, string>,
       cb: (err: Error | null, result?: unknown) => void,
     ) => void;
+    forgotPassword: (email: string, cb: (err: Error | null, result?: unknown) => void) => void;
+    confirmForgotPassword: (
+      email: string,
+      code: string,
+      newPassword: string,
+      cb: (err: Error | null) => void,
+    ) => void;
+    changePassword: (
+      oldPassword: string,
+      newPassword: string,
+      cb: (err: Error | null) => void,
+    ) => void;
     signOut: () => void;
     getUserInfo?: () => { sub: string; email: string; groups: string[]; emailVerified: boolean } | null;
     getGroups?: () => string[];
