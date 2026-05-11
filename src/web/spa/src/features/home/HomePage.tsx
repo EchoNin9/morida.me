@@ -8,6 +8,7 @@ import {
   MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { apiGet } from "../../utils/api";
+import { parseDateLocal } from "../../utils/dates";
 import { useAuth, hasRole } from "../../shell/AuthContext";
 import { stagger, fadeUp, viewportOnce, GRAIN_SVG } from "../../utils/motion";
 import { OptimizedImg } from "../../utils/OptimizedImg";
@@ -70,7 +71,7 @@ interface HeroBranding {
 /* ------------------------------------------------------------------ */
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
+  return parseDateLocal(iso).toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -79,7 +80,7 @@ function formatDate(iso: string): string {
 }
 
 function isToday(iso: string): boolean {
-  const d = new Date(iso);
+  const d = parseDateLocal(iso);
   const now = new Date();
   return d.toDateString() === now.toDateString();
 }
@@ -192,7 +193,7 @@ export function HomePage() {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
         const upcoming = showsData
-          .filter((s) => new Date(s.date) >= now)
+          .filter((s) => parseDateLocal(s.date) >= now)
           .sort(
             (a, b) =>
               new Date(a.date).getTime() - new Date(b.date).getTime(),

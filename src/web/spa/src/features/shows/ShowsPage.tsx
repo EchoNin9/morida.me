@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { apiGet } from "../../utils/api";
+import { parseDateLocal } from "../../utils/dates";
 import { EmptyState } from "../../shell/EmptyState";
 import { OptimizedImg } from "../../utils/OptimizedImg";
 
@@ -32,7 +33,7 @@ export interface Show {
 /* ------------------------------------------------------------------ */
 
 function toDateStr(iso: string): string {
-  const d = new Date(iso);
+  const d = parseDateLocal(iso);
   return d.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
@@ -42,7 +43,7 @@ function toDateStr(iso: string): string {
 }
 
 function isToday(iso: string): boolean {
-  const d = new Date(iso);
+  const d = parseDateLocal(iso);
   const now = new Date();
   return (
     d.getFullYear() === now.getFullYear() &&
@@ -52,7 +53,7 @@ function isToday(iso: string): boolean {
 }
 
 function isFuture(iso: string): boolean {
-  const d = new Date(iso);
+  const d = parseDateLocal(iso);
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   d.setHours(0, 0, 0, 0);

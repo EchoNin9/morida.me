@@ -174,6 +174,52 @@
   }
 
   /**
+   * Start a forgot-password flow. Cognito emails the user a code.
+   * cb(err, { CodeDeliveryDetails })
+   */
+  function forgotPassword(email, cb) {
+    cognitoFetch('ForgotPassword', {
+      ClientId: CLIENT_ID(),
+      Username: email,
+    }, function (err, data) {
+      cb(err || null, data);
+    });
+  }
+
+  /**
+   * Complete a forgot-password flow with the emailed code and a new password.
+   * cb(err)
+   */
+  function confirmForgotPassword(email, code, newPassword, cb) {
+    cognitoFetch('ConfirmForgotPassword', {
+      ClientId: CLIENT_ID(),
+      Username: email,
+      ConfirmationCode: code,
+      Password: newPassword,
+    }, function (err) {
+      cb(err || null);
+    });
+  }
+
+  /**
+   * Change password for the currently signed-in user.
+   * Requires a valid access token; refreshes if expired.
+   * cb(err)
+   */
+  function changePassword(oldPassword, newPassword, cb) {
+    getAccessToken(function (err, token) {
+      if (err) return cb(err);
+      cognitoFetch('ChangePassword', {
+        AccessToken: token,
+        PreviousPassword: oldPassword,
+        ProposedPassword: newPassword,
+      }, function (err2) {
+        cb(err2 || null);
+      });
+    });
+  }
+
+  /**
    * Respond to an auth challenge (e.g. NEW_PASSWORD_REQUIRED).
    * cb(err, result)
    */
@@ -305,6 +351,9 @@
     signUp: signUp,
     confirmSignUp: confirmSignUp,
     respondToChallenge: respondToChallenge,
+    forgotPassword: forgotPassword,
+    confirmForgotPassword: confirmForgotPassword,
+    changePassword: changePassword,
     signOut: signOut,
     isAuthenticated: isAuthenticated,
     getAccessToken: getAccessToken,
