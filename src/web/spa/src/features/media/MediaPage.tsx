@@ -241,7 +241,11 @@ const PAGE_SIZE = 10;
 export default function MediaPage() {
   const { user } = useAuth();
   const isAdmin = hasRole(user, "admin");
-  const [activeTab, setActiveTab] = useState(0);
+  // Default to Video; remember the last-used tab. findIndex → -1 handles missing/bad values.
+  const [activeTab, setActiveTab] = useState(() => {
+    const saved = TABS.findIndex((t) => t.type === localStorage.getItem("mo_media_tab"));
+    return saved >= 0 ? saved : 1;
+  });
   const [items, setItems] = useState<MediaItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -260,6 +264,11 @@ export default function MediaPage() {
       .then(setCategories)
       .catch(() => {});
   }, []);
+
+  // Persist last-used tab
+  useEffect(() => {
+    localStorage.setItem("mo_media_tab", TABS[activeTab].type);
+  }, [activeTab]);
 
   // Debounce search
   useEffect(() => {
