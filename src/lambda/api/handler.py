@@ -7,7 +7,6 @@ import json
 import logging
 import os
 import uuid
-import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
@@ -420,11 +419,6 @@ def _enrich_media_item(item: dict) -> dict:
     return item
 
 
-def _enrich_media_items(items: list[dict]) -> list[dict]:
-    """Enrich a list of media items with presigned URLs."""
-    return [_enrich_media_item(item) for item in items]
-
-
 def _resolve_media_ids(media_ids: list[str]) -> list[dict]:
     """Look up media items by IDs and return enriched items."""
     if not media_ids:
@@ -493,14 +487,6 @@ def _validate_api_key(event: dict, scope: str = "embed") -> bool:
         return False
     scopes = item.get("scopes", [])
     return scope in scopes or "*" in scopes
-
-
-# ---------------------------------------------------------------------------
-# Route: Health
-# ---------------------------------------------------------------------------
-
-def handle_health(event, method):
-    return ok({"status": "ok"})
 
 
 # ---------------------------------------------------------------------------
@@ -912,7 +898,7 @@ def handle_media(event, method, parts):
         if err:
             return err
         items = _query_entity("MEDIA")
-        _enrich_media_items(items)
+        items = [_enrich_media_item(i) for i in items]
         return ok(items)
 
     # GET /media — public only, with filters
@@ -958,7 +944,7 @@ def handle_media(event, method, parts):
             items = items[offset:]
         if limit > 0:
             items = items[:limit]
-        _enrich_media_items(items)
+        items = [_enrich_media_item(i) for i in items]
         if limit > 0 or offset > 0:
             return ok({"items": items, "total": total, "limit": limit, "offset": offset}, cache=120)
         return ok(items, cache=120)
@@ -2173,7 +2159,7 @@ def handler(event, context):
     try:
         # Public routes
         if root == "health":
-            return handle_health(event, method)
+            return ok({"status": "ok"})
         if root == "shows":
             return handle_shows(event, method, parts)
         if root == "venues":

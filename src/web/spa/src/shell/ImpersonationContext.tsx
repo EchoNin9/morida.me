@@ -24,8 +24,6 @@ interface ImpersonationContextValue {
   startImpersonation: (userId: string, role: string) => void;
   /** Stop impersonation and revert to real identity */
   stopImpersonation: () => void;
-  /** Get HTTP headers to attach to API requests (empty object if not impersonating) */
-  getImpersonationHeaders: () => Record<string, string>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -37,7 +35,6 @@ const ImpersonationContext = createContext<ImpersonationContextValue>({
   isImpersonating: false,
   startImpersonation: () => {},
   stopImpersonation: () => {},
-  getImpersonationHeaders: () => ({}),
 });
 
 export function useImpersonation(): ImpersonationContextValue {
@@ -69,14 +66,6 @@ export function ImpersonationProvider({ children }: { children: ReactNode }) {
     setTarget(null);
   }, []);
 
-  const getImpersonationHeaders = useCallback((): Record<string, string> => {
-    if (!target) return {};
-    return {
-      'X-Impersonate-User': target.userId,
-      'X-Impersonate-Role': target.role,
-    };
-  }, [target]);
-
   return (
     <ImpersonationContext.Provider
       value={{
@@ -84,7 +73,6 @@ export function ImpersonationProvider({ children }: { children: ReactNode }) {
         isImpersonating: target !== null,
         startImpersonation,
         stopImpersonation,
-        getImpersonationHeaders,
       }}
     >
       {children}
