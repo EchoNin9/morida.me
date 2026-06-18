@@ -157,7 +157,7 @@ export function Header() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <img src="/logo.jpg" alt="MoRida" className="w-8 h-8 object-contain" />
-          <span className="text-xl font-display font-bold text-gradient">MoRida</span>
+          <span className="text-2xl font-brand text-gradient tracking-wide">Mo' Rida</span>
         </Link>
 
         {/* Desktop nav */}

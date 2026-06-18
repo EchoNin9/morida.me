@@ -241,7 +241,7 @@ export function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <h1 className="text-6xl sm:text-8xl lg:text-9xl font-display font-bold text-gradient leading-tight tracking-tight pb-2">
+            <h1 className="text-6xl sm:text-8xl lg:text-9xl font-brand text-gradient leading-tight tracking-wide pb-2">
               {hero.heroTitle}
             </h1>
           </motion.div>

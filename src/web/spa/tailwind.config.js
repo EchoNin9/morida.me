@@ -44,6 +44,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Oswald', 'system-ui', 'sans-serif'],
+        brand: ['Bangers', 'cursive'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out forwards',
