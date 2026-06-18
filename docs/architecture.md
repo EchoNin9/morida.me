@@ -241,4 +241,5 @@ main branch → GitHub Actions → Production
 - **Auth:** Cognito JS SDK via auth.js + AuthContext
 - **State:** React Context (auth, impersonation)
 - **Caching:** localStorage for categories and search results (5-min TTL)
-- **Design:** Dark theme (#0f172a) with orange accents (#f97316), Oswald + Inter fonts
+- **Design:** Dark theme (#0f172a) with orange accents (#f97316). Fonts: Bangers (`font-brand`, logo + hero), Oswald (`font-display`, headings), Inter (`font-sans`, body)
+- **Static assets:** `src/web/spa/public/` is Vite's `publicDir` — files there (e.g. `auth.js`, `config.js`) are copied to `dist/` on build. `config.js` is overwritten at deploy time with Terraform outputs
