@@ -120,6 +120,12 @@ Copy these directories/files from `../orangewhip.surf` into this repo, preservin
 .cursorrules
 .github/workflows/dev.yml
 .github/workflows/main.yml
+docs/architecture.md
+docs/dependabot-remediation-plan.md
+docs/github-vars.md
+docs/google-sign-in-setup.md
+docs/tasks.md
+docs/visual-editing-howto.md
 infra/cloudfront.tf
 infra/layer_requirements.txt
 infra/main.tf
@@ -152,7 +158,7 @@ src/web/spa/public/logo.png
 src/web/spa/src/
 ```
 
-Do **not** copy: `infra/.terraform.lock.hcl`, `infra/build/`, `src/web/spa/dist/`, `src/web/spa/node_modules/`.
+Do **not** copy: `infra/.terraform.lock.hcl`, `infra/build/`, `src/web/spa/dist/`, `src/web/spa/node_modules/`, `.claude/`, `.pytest_cache/`.
 
 Also copy the `.gitignore` from orangewhip.surf, then append morida-specific entries if needed.
 
@@ -483,11 +489,15 @@ Full mapping from orangewhip → morida:
 | Website staging bucket | `ows-website-staging` | `mo-website-staging` |
 | Website production bucket | `ows-website-production` | `mo-website-production` |
 | Redirect bucket | `ows-redirect-info` | *(not applicable)* |
-| API Lambda | `ows-api` | `mo-api` |
-| Thumb Lambda | `ows-thumb` | `mo-thumb` |
+| API Lambda function | `ows-api` / `ows-api-lambda` | `mo-api` / `mo-api-lambda` |
+| Thumb Lambda function | `ows-thumb` / `ows-thumb-lambda` | `mo-thumb` / `mo-thumb-lambda` |
+| Pillow Lambda layer | `ows-pillow-layer` | `mo-pillow-layer` |
+| FFmpeg Lambda layer | `ows-ffmpeg-layer` | `mo-ffmpeg-layer` |
 | API Lambda role | `ows-api-lambda-role` | `mo-api-lambda-role` |
 | Thumb Lambda role | `ows-thumb-lambda-role` | `mo-thumb-lambda-role` |
 | MediaConvert role | `ows-mediaconvert-role` | `mo-mediaconvert-role` |
+| MediaConvert S3 IAM role | `ows-mediaconvert-s3` | `mo-mediaconvert-s3` |
+| MediaConvert EventBridge rule | `ows-mediaconvert-complete` | `mo-mediaconvert-complete` |
 | Cognito user pool | `ows-user-pool` | `mo-user-pool` |
 | Cognito domain | `ows-auth` | `mo-auth` |
 | GitHub Actions role (staging) | `github-actions-orangewhip-staging` | `github-actions-morida-staging` |
@@ -495,6 +505,8 @@ Full mapping from orangewhip → morida:
 | Deploy IAM policy | `ows-deploy` | `mo-deploy` |
 | SPA package name | `orangewhip-spa` | `morida-spa` |
 | localStorage key | `ows_categories` | `mo_categories` |
+
+> Note: this table is illustrative. The Phase 1 `ows-` → `mo-` global find-and-replace (T1-B) handles all resource names automatically — no resource needs to be renamed by hand.
 
 ---
 

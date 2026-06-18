@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta Tags -->
+    <title>morida.me</title>
+    <meta name="title" content="morida.me" />
+    <meta name="description" content="morida.me" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://morida.me/" />
+    <meta property="og:title" content="morida.me" />
+    <meta property="og:description" content="morida.me" />
+    <meta property="og:image" content="https://morida.me/og.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://morida.me/" />
+    <meta property="twitter:title" content="morida.me" />
+    <meta property="twitter:description" content="morida.me" />
+    <meta property="twitter:image" content="https://morida.me/og.jpg" />
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- Fonts (preconnect + non-blocking stylesheet) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" />
+
+    <style>
+      /* Prevent FOUC - dark background while loading */
+      html { background-color: #0f172a; }
+      body { margin: 0; background-color: #0f172a; color: #f1f5f9; }
+    </style>
+
+    <!-- Runtime config (injected by deployment pipeline) -->
+    <script src="/config.js"></script>
+    <!-- Cognito auth bootstrap -->
+    <script src="/auth.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
