@@ -69,14 +69,18 @@ The site uses a dark theme with orange accents. All colors are defined in `tailw
 
 ## Typography
 
+- **Brand:** `font-brand` → Bangers (comic-book display). Used **only** on the header logo ("Mo' Rida") and the homepage hero title. Single-weight, so don't add `font-bold`.
 - **Headings:** `font-display` → Oswald (bold, uppercase feel)
 - **Body text:** `font-sans` → Inter (clean, readable)
 - **Gradient text:** Use `text-gradient` class for the orange gradient effect
 
 ```html
-<h1 class="font-display text-5xl font-bold text-gradient">MoRida</h1>
+<span class="font-brand text-2xl text-gradient tracking-wide">Mo' Rida</span>
+<h1 class="font-display text-5xl font-bold text-gradient">Section Heading</h1>
 <p class="text-secondary-300">Body text in light slate</p>
 ```
+
+Fonts are loaded in `src/web/spa/index.html` (Google Fonts `<link>`) and registered in `src/web/spa/tailwind.config.js` under `fontFamily`.
 
 ## Common Components / Utility Classes
 

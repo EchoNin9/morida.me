@@ -239,18 +239,6 @@ def _generate_video_thumbnail(bucket: str, s3_key: str, media_id: str):
 
 
 # ---------------------------------------------------------------------------
-# Audio thumbnail (default icon)
-# ---------------------------------------------------------------------------
-
-def _generate_audio_thumbnail(media_id: str):
-    """
-    Audio files don't have visual frames.
-    Skip thumbnail generation — the frontend uses a default audio icon.
-    """
-    logger.info("Audio media %s — skipping thumbnail (frontend uses default icon)", media_id)
-
-
-# ---------------------------------------------------------------------------
 # Direct invocation handler (from API Lambda)
 # ---------------------------------------------------------------------------
 
@@ -272,7 +260,7 @@ def _handle_direct_invocation(event: dict):
     elif media_type == "video":
         _generate_video_thumbnail(bucket, s3_key, media_id)
     elif media_type == "audio":
-        _generate_audio_thumbnail(media_id)
+        logger.info("Audio media %s — skipping thumbnail (frontend uses default icon)", media_id)
     else:
         logger.warning("Unknown media type: %s", media_type)
 
@@ -304,7 +292,7 @@ def _handle_s3_event(record: dict):
     elif s3_key.startswith("media/video") or s3_key.startswith("media/videos"):
         _generate_video_thumbnail(bucket, s3_key, media_id)
     elif s3_key.startswith("media/audio"):
-        _generate_audio_thumbnail(media_id)
+        logger.info("Audio media %s — skipping thumbnail (frontend uses default icon)", media_id)
     else:
         logger.info("Unrecognized media prefix for key: %s", s3_key)
 

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ImpersonationProvider } from '@/shell/ImpersonationContext';
 import { AuthProvider } from '@/shell/AuthContext';
-import { App } from '@/shell/App';
+import { AppLayout } from '@/shell/AppLayout';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -11,7 +11,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ImpersonationProvider>
         <AuthProvider>
-          <App />
+          <AppLayout />
         </AuthProvider>
       </ImpersonationProvider>
     </BrowserRouter>

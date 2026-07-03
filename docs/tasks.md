@@ -119,6 +119,43 @@ All 6 of 7 existing videos had no thumbnail. One had a JPEG from before.
 
 ---
 
+### Session: 2026-06-18
+
+#### 10. Over-Engineering Cleanup (ponytail audit) ✅
+**Commit:** `dd1ce90` — `ponytail: remove dead code and no-op wrappers`
+
+- Deleted `src/web/auth.js` — exact duplicate of `src/web/spa/public/auth.js` (the canonical copy Vite ships)
+- Deleted `src/web/spa/src/shell/App.tsx` — passthrough wrapper; `main.tsx` now imports `AppLayout` directly
+- Removed `getImpersonationHeaders` from `ImpersonationContext` — dead; `api.ts` reads impersonation headers from sessionStorage directly
+- Removed `_generate_audio_thumbnail` no-op in `thumb/handler.py`; inlined the `logger.info` at both call sites
+- Inlined `_enrich_media_items` (single-line list comprehension) and the `handle_health` route
+- Dropped unused `import time` from `api/handler.py`
+- Net: −352 lines, −2 files
+
+#### 11. Fix Deploy: Redundant auth.js Copy ✅
+**Commit:** `b774450` — `ci: drop redundant auth.js copy that broke deploy`
+
+- Deploy #12 failed: `cp src/web/auth.js dist/auth.js` had no source after the duplicate was deleted, failing under `set -e`
+- Root cause: Vite already copies `public/auth.js` → `dist/auth.js` during build, so the `cp` was always overwriting an identical file
+- Removed the redundant `cp` line from both `dev.yml` and `main.yml`; staging deploy green
+- Recorded the lesson in `CLAUDE.md` (commit `6265d9e`): grep filenames across `.github/workflows/`, `scripts/`, `infra/` before deleting a file
+
+#### 12. Comic-Book Brand Font (Bangers) ✅
+**Commit:** `6d4499d` — `spa: comic-book font (Bangers) for logo and hero title`
+
+- Added **Bangers** (Google Fonts) as a dedicated `font-brand` family in `tailwind.config.js`; loaded via `index.html`
+- Applied to the header logo (now reads **"Mo' Rida"**) and the homepage hero `<h1>` only — site-wide `font-display` (Oswald) headings unchanged
+- Dropped `font-bold` (Bangers is single-weight) and the negative `tracking-tight` that crammed the heavy glyphs
+
+#### 13. /media Defaults to Video + Remembers Last Tab ✅
+**Commit:** `227173d` — `spa: default /media to Video, remember last-used tab`
+
+- `/media` now defaults to the **Video** tab on first visit
+- Last-used tab persists in localStorage (key `mo_media_tab`, stores the tab *type* so it survives tab reordering); `findIndex → -1` cleanly defaults to Video on missing/bad values
+- Per-browser only — cross-device sync would need a profile field + API write
+
+---
+
 ## Pending / Backlog
 
 ### CloudFront for Media Bucket
