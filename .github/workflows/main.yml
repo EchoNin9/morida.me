@@ -59,8 +59,11 @@ jobs:
         working-directory: infra
         run: |
           mkdir -p build/ffmpeg_layer/bin
-          curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
-            | tar -xJ --strip-components=1 -C build/ffmpeg_layer/bin --wildcards '*/ffmpeg'
+          # johnvansickle.com is a single flaky host — retry + --fail so a bad
+          # response errors here instead of piping an HTML error page into tar.
+          curl --fail --retry 5 --retry-all-errors --retry-delay 5 -sSL \
+            https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o /tmp/ffmpeg.tar.xz
+          tar -xJ --strip-components=1 -C build/ffmpeg_layer/bin --wildcards '*/ffmpeg' -f /tmp/ffmpeg.tar.xz
           chmod +x build/ffmpeg_layer/bin/ffmpeg
           cd build/ffmpeg_layer && zip -rq ../ffmpeg_layer.zip bin
 
