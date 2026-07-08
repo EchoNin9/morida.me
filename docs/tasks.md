@@ -154,6 +154,19 @@ All 6 of 7 existing videos had no thumbnail. One had a JPEG from before.
 - Last-used tab persists in localStorage (key `mo_media_tab`, stores the tab *type* so it survives tab reordering); `findIndex → -1` cleanly defaults to Video on missing/bad values
 - Per-browser only — cross-device sync would need a profile field + API write
 
+#### 14. Trim Topbar Social Links ✅
+**Commit:** `bc7e305` — `spa: remove Spotify, Facebook, YouTube from topbar`
+
+- Removed Spotify, Facebook, and YouTube from the header `socialLinks` array (`src/web/spa/src/shell/Header.tsx`); topbar now shows Instagram, Bluesky, SoundCloud
+- Deleted their now-unused inline icon components (−24 lines)
+
+#### 15. Harden Flaky FFmpeg Layer Download ✅
+**Commit:** `4c92624` — `ci: harden flaky ffmpeg layer download (retry + --fail)`
+
+- Deploy #16 failed at "Build FFmpeg Lambda layer": `johnvansickle.com` served a bad response and `curl -sL | tar` piped an HTML error page into xz (`File format not recognized`) — unrelated to the topbar change it rode on
+- Fix (both `dev.yml` + `main.yml`): download to a file with `curl --fail --retry 5 --retry-all-errors --retry-delay 5 -o`, then extract — a bad response now fails curl (and retries) instead of corrupting the extract
+- URL itself verified healthy (HTTP 200, valid xz); the failure was a transient blip from that single flaky host
+
 ---
 
 ## Pending / Backlog
